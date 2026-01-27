@@ -1,16 +1,52 @@
-# React + Vite
+# Technopark Events - Hyper-local Campus News Feed
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A community-driven web application connecting people within the Technopark campus. Users can view and share events, offers, and news specific to their building.
 
-Currently, two official plugins are available:
+**Current Status:** MVP Planning / Frontend Development
+**Future Roadmap:** PCM Mobile App
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features (MVP)
 
-## React Compiler
+### 🟢 Public Feed (No Auth Required)
+- **Card View:** Visual feed of events with Image, Title, Date, and Building tags.
+- **Smart Filters:** Filter content by specific Building (e.g., "Building 4", "Food Court") or Time ("Today", "This Week").
+- **Search:** Basic text search for event titles.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🔐 Posting & User Actions (Auth Required)
+- **Create Post:** Users must sign in (Google Auth planned) to upload.
+- **Anonymous Mode:** Checkbox to post without displaying the user's name publicly (Privacy).
+- **Report System:** Users can flag inappropriate content. (Logic: 5 reports = Auto-hide).
 
-## Expanding the ESLint configuration
+### 🛡️ Safety & Moderation
+- **AI Content Filtering:** Automatic rejection of NSFW/Adult images during upload (Integration TBD).
+- **Identity Tracking:** All posts are linked to a user identity internally for accountability.
+- **Admin Dashboard:** Capability to ban users and review flagged posts.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠️ Tech Stack
+
+- **Frontend:** React.js, Tailwind CSS
+- **Backend:** *To Be Decided*
+- **Database:** *To Be Decided*
+- **Authentication:** Google OAuth (Implementation TBD)
+- **Image Storage:** *To Be Decided*
+
+## 📂 Data Requirements (Logical Model)
+
+### User Entity
+- **Identity:** Name, Email, Profile Picture (from Auth Provider)
+- **Role:** User / Admin
+- **Status:** Active / Banned
+
+### Post Entity
+- **Content:** Title (Max 50 chars), Description, Image URL
+- **Context:** Building Name (Dropdown selection), Event Date/Time
+- **Owner:** Author ID (Linked to User)
+- **Settings:** Is Anonymous? (Boolean)
+- **Moderation:** Report Count, Visibility Status (Active/Hidden)
+
+## 🏃‍♂️ Getting Started (Frontend)
+
+1. **Clone the repository**
+   ```bash
+   git clone [https://github.com/yourusername/technopark-events.git](https://github.com/yourusername/technopark-events.git)
+   cd technopark-events
