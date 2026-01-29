@@ -139,7 +139,6 @@ export default function Upload() {
         image_url: publicUrl,
         author_id: user.id,
         author_email: user.email,
-        is_anonymous: formData.isAnonymous
       });
 
       navigate('/');

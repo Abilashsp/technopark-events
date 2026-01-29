@@ -1,339 +1,224 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   Container,
-  Grid,
-  Chip,
   Box,
   CircularProgress,
   Typography,
   Fade,
-  TextField,
-  InputAdornment,
   Button,
   Pagination,
   IconButton,
-  Tooltip
+  Tooltip,
+  Paper,
+  Stack,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
-import { Search, ViewAgenda, ViewWeek } from '@mui/icons-material';
+import {
+  ViewAgenda,
+  ViewWeek,
+} from '@mui/icons-material';
 import { useSearchParams } from 'react-router-dom';
+
 import EventCard from '../components/EventCard';
 import { eventService } from '../services/eventService';
-import { BUILDING_FILTERS, DATE_FILTERS, PAGE_SIZE } from '../constants/dateFilters';
+import { PAGE_SIZE } from '../constants/dateFilters';
+
+import HeroSection from '../components/HeroSection';
+import FilterBar from '../components/FilterBar';
+
 
 export default function Feed() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // --- STATE ---
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchInput, setSearchInput] = useState('');
-  const [viewMode, setViewMode] = useState('list'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid');
 
-  // Get filters from URL params
+  console.log(events)
+
+  // Local state for inputs
+  const [localSearch, setLocalSearch] = useState(searchParams.get('search') || '');
+  const [localBuilding, setLocalBuilding] = useState(searchParams.get('building') || 'All');
+  const [localDate, setLocalDate] = useState(searchParams.get('date') || 'all');
+
+  // URL params
   const buildingFilter = searchParams.get('building') || 'All';
   const dateFilter = searchParams.get('date') || 'all';
   const searchQuery = searchParams.get('search') || '';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
+  /* ---------------- FETCH EVENTS ---------------- */
   const fetchEvents = useCallback(async () => {
     setLoading(true);
-    const result = await eventService.fetchEvents(
-      buildingFilter,
-      dateFilter === 'all' ? null : dateFilter,
-      searchQuery,
-      currentPage,
-      PAGE_SIZE
-    );
-    setEvents(result.events || []);
-    setTotalPages(result.totalPages || 1);
-    setLoading(false);
-  }, [buildingFilter, dateFilter, searchQuery, currentPage]);
-
-  const handleBuildingChange = (building) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('building', building);
-    params.set('page', '1'); // Reset to page 1 on filter change
-    setSearchParams(params);
-  };
-
-  const handleDateChange = (date) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('date', date);
-    params.set('page', '1');
-    setSearchParams(params);
-  };
-
-  const handleSearch = () => {
-    const params = new URLSearchParams(searchParams);
-    if (searchInput.trim()) {
-      params.set('search', searchInput);
-    } else {
-      params.delete('search');
+    try {
+      const result = await eventService.fetchEvents(
+        buildingFilter,
+        dateFilter === 'all' ? null : dateFilter,
+        searchQuery,
+        currentPage,
+        PAGE_SIZE
+      );
+      setEvents(result.events || []);
+      setTotalPages(result.totalPages || 1);
+    } catch (error) {
+      console.error("Failed to fetch events", error);
+    } finally {
+      setLoading(false);
     }
-    params.set('page', '1');
-    setSearchParams(params);
-  };
-
-  const handlePageChange = (event, value) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('page', value.toString());
-    setSearchParams(params);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Separate function for refresh that can be called from EventCard
-  const handleRefreshEvents = useCallback(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+  }, [buildingFilter, dateFilter, searchQuery, currentPage]);
 
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
 
+  /* ---------------- HANDLERS ---------------- */
+  const handleTriggerSearch = () => {
+    const params = new URLSearchParams(searchParams);
+    params.set('building', localBuilding);
+    params.set('date', localDate);
+    if (localSearch.trim()) params.set('search', localSearch);
+    else params.delete('search');
+    params.set('page', '1');
+    setSearchParams(params);
+  };
+
+  const handlePageChange = (_, value) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', value.toString());
+    setSearchParams(params);
+    window.scrollTo({ top: 450, behavior: 'smooth' });
+  };
+
+  const handleRefreshEvents = useCallback(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
+  /* ---------------- UI ---------------- */
   return (
-    <Container
-      maxWidth="lg"
-      sx={{
-        py: 2,
-        minHeight: '100vh',
-        bgcolor: '#fafafa',
-        direction: 'ltr'
-      }}
-    >
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa', mt: 0, pt: 0 }}>
 
-      {/* Header Section */}
-      <Box mb={2.5} textAlign="left">
-        <Typography variant="h5" component="h1" fontWeight={800} color="#1a1a1a" gutterBottom sx={{ mb: 0.5 }}>
-          Discover Events
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          See what's happening around Technopark today.
-        </Typography>
-      </Box>
-
-      {/* Search Bar */}
-      <Box mb={2.5} display="flex" gap={1} flexWrap={{ xs: 'wrap', sm: 'nowrap' }} sx={{ direction: 'ltr' }}>
-        <TextField
-          fullWidth
-          placeholder="Search events by title or description..."
-          variant="outlined"
-          size="small"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search sx={{ color: '#666' }} />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            bgcolor: '#fff',
-            borderRadius: 1,
-            '& .MuiOutlinedInput-root': {
-              fontSize: { xs: '14px', md: '16px' },
-            }
-          }}
+      {/* ================= HERO SECTION ================= */}
+      <HeroSection isMobile={isMobile}>
+        <FilterBar
+          isMobile={isMobile}
+          localSearch={localSearch}
+          setLocalSearch={setLocalSearch}
+          handleTriggerSearch={handleTriggerSearch}
+          localBuilding={localBuilding}
+          setLocalBuilding={setLocalBuilding}
+          localDate={localDate}
+          setLocalDate={setLocalDate}
         />
-        <Button
-          variant="contained"
-          onClick={handleSearch}
-          sx={{
-            whiteSpace: 'nowrap',
-            fontSize: { xs: '12px', md: '14px' },
-            px: { xs: 1.5, md: 2 },
-            width: { xs: '100%', sm: 'auto' }
-          }}
-        >
-          Search
-        </Button>
-      </Box>
+      </HeroSection>
 
-      {/* Building Filter Chips */}
-      <Box
-        sx={{
-          mb: 2,
-          display: 'flex',
-          gap: 1,
-          overflowX: 'auto',
-          pb: 1,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          direction: 'ltr',
-          '::-webkit-scrollbar': { display: 'none' }
-        }}
-      >
-        <Box sx={{ display: 'flex', gap: 1, overflow: 'auto', flex: 1, '::-webkit-scrollbar': { display: 'none' } }}>
-          {BUILDING_FILTERS.map((b) => (
-            <Chip
-              key={b.value}
-              label={b.label}
-              onClick={() => handleBuildingChange(b.value)}
-              sx={{
-                fontWeight: 600,
-                px: 1.2,
-                borderRadius: '8px',
-                transition: 'all 0.2s',
-                bgcolor: buildingFilter === b.value ? '#1a1a1a' : '#fff',
-                color: buildingFilter === b.value ? '#fff' : '#666',
-                border: '1px solid',
-                borderColor: buildingFilter === b.value ? '#1a1a1a' : '#e0e0e0',
-                fontSize: { xs: '12px', md: '14px' },
-                '&:hover': {
-                  bgcolor: buildingFilter === b.value ? '#333' : '#f5f5f5',
-                  borderColor: buildingFilter === b.value ? '#333' : '#d0d0d0',
-                }
-              }}
-              clickable
-            />
-          ))}
+      {/* ================= MAIN CONTENT GRID ================= */}
+      <Container maxWidth="lg" sx={{ pb: 8 }}>
+
+        {/* VIEW TOGGLE */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+          <Stack direction="row" spacing={1} sx={{ bgcolor: '#fff', p: 0.5, borderRadius: 2, border: '1px solid #e0e0e0' }}>
+            <Tooltip title="Grid View">
+              <IconButton
+                onClick={() => setViewMode('grid')}
+                size="small"
+                sx={{
+                  bgcolor: viewMode === 'grid' ? '#ebf2fa' : 'transparent',
+                  color: viewMode === 'grid' ? 'primary.main' : 'text.secondary',
+                  borderRadius: 1.5
+                }}
+              >
+                <ViewWeek fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="List View">
+              <IconButton
+                onClick={() => setViewMode('list')}
+                size="small"
+                sx={{
+                  bgcolor: viewMode === 'list' ? '#ebf2fa' : 'transparent',
+                  color: viewMode === 'list' ? 'primary.main' : 'text.secondary',
+                  borderRadius: 1.5
+                }}
+              >
+                <ViewAgenda fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </Box>
 
-        {/* View Mode Toggle */}
-        <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto', flexShrink: 0 }}>
-          <Tooltip title="Grid View">
-            <IconButton
-              size="small"
-              onClick={() => setViewMode('grid')}
-              sx={{
-                bgcolor: viewMode === 'grid' ? '#1a1a1a' : '#fff',
-                color: viewMode === 'grid' ? '#fff' : '#666',
-                border: '1px solid',
-                borderColor: viewMode === 'grid' ? '#1a1a1a' : '#e0e0e0',
-                '&:hover': {
-                  bgcolor: viewMode === 'grid' ? '#333' : '#f5f5f5',
-                }
-              }}
-            >
-              <ViewWeek fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="List View">
-            <IconButton
-              size="small"
-              onClick={() => setViewMode('list')}
-              sx={{
-                bgcolor: viewMode === 'list' ? '#1a1a1a' : '#fff',
-                color: viewMode === 'list' ? '#fff' : '#666',
-                border: '1px solid',
-                borderColor: viewMode === 'list' ? '#1a1a1a' : '#e0e0e0',
-                '&:hover': {
-                  bgcolor: viewMode === 'list' ? '#333' : '#f5f5f5',
-                }
-              }}
-            >
-              <ViewAgenda fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Box>
-
-      {/* Date Filter Chips */}
-      <Box
-        sx={{
-          mb: 4,
-          display: 'flex',
-          gap: 1,
-          overflowX: 'auto',
-          pb: 1,
-          justifyContent: 'flex-start',
-          '::-webkit-scrollbar': { display: 'none' }
-        }}
-      >
-        {DATE_FILTERS.map((d) => (
-          <Chip
-            key={d.value}
-            label={d.label}
-            onClick={() => handleDateChange(d.value)}
-            sx={{
-              fontWeight: 600,
-              px: 1.2,
-              borderRadius: '8px',
-              transition: 'all 0.2s',
-              bgcolor: dateFilter === d.value ? '#1976d2' : '#fff',
-              color: dateFilter === d.value ? '#fff' : '#666',
-              border: '1px solid',
-              borderColor: dateFilter === d.value ? '#1976d2' : '#e0e0e0',
-              fontSize: { xs: '12px', md: '14px' },
-              '&:hover': {
-                bgcolor: dateFilter === d.value ? '#1565c0' : '#f5f5f5',
-                borderColor: dateFilter === d.value ? '#1565c0' : '#d0d0d0',
-              }
-            }}
-            clickable
-          />
-        ))}
-      </Box>
-
-      {/* Grid/List Layout */}
-      {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" height="40vh">
-          <CircularProgress size={60} thickness={4} sx={{ color: '#1a1a1a' }} />
-        </Box>
-      ) : (
-        <Fade in={!loading}>
-          <Box sx={{ width: '100%', direction: 'ltr' }}>
-            <Box
-              sx={{
-                mb: 4,
-                display: viewMode === 'grid' ? 'grid' : 'flex',
-                flexDirection: viewMode === 'list' ? 'column' : undefined,
-                gridTemplateColumns: viewMode === 'grid' ? {
-                  xs: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  md: 'repeat(3, 1fr)',
-                  lg: 'repeat(4, 1fr)'
-                } : undefined,
-                gap: { xs: 1.5, sm: 2, md: 2.5 },
-                width: '100%'
-              }}
-            >
-              {events.length === 0 ? (
-                <Box sx={{ gridColumn: viewMode === 'grid' ? '1 / -1' : undefined }}>
-                  <Box textAlign="center" py={8}>
+        {/* LOADING STATE */}
+        {loading ? (
+          <Box display="flex" justifyContent="center" height="40vh" alignItems="center">
+            <CircularProgress size={50} thickness={4} />
+          </Box>
+        ) : (
+          <Fade in>
+            <Box>
+              {/* CARDS GRID */}
+              <Box
+                sx={{
+                  display: viewMode === 'grid' ? 'grid' : 'flex',
+                  flexDirection: viewMode === 'list' ? 'column' : undefined,
+                  gridTemplateColumns: viewMode === 'grid'
+                    ? { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)', lg: 'repeat(4,1fr)' }
+                    : undefined,
+                  gap: 3
+                }}
+              >
+                {events.length === 0 ? (
+                  <Box textAlign="center" py={8} gridColumn="1 / -1">
                     <Typography variant="h6" color="text.secondary">
-                      No upcoming events {buildingFilter !== 'All' && `in ${buildingFilter}`}{searchQuery && ` matching "${searchQuery}"`}.
+                      No events found matching your criteria.
                     </Typography>
-                    <Typography variant="body2" color="text.disabled">
-                      Try checking a different filter or search term!
-                    </Typography>
+                    <Button
+                      variant="outlined"
+                      onClick={() => {
+                        setLocalSearch('');
+                        setLocalBuilding('All');
+                        setLocalDate('all');
+                        handleTriggerSearch();
+                      }}
+                      sx={{ mt: 2 }}
+                    >
+                      Clear Filters
+                    </Button>
                   </Box>
-                </Box>
-              ) : (
-                events.map((event) => (
-                  <Box
-                    key={event.id}
-                    sx={{
-                      width: viewMode === 'list' ? '100%' : undefined,
-                      maxHeight: viewMode === 'list' ? '140px' : undefined,
-                      direction: 'ltr'
-                    }}
-                  >
+                ) : (
+                  events.map((event) => (
                     <EventCard
+                      key={event.id}
                       event={event}
-                      onEventUpdated={handleRefreshEvents}
                       isListView={viewMode === 'list'}
+                      onEventUpdated={handleRefreshEvents}
                     />
-                  </Box>
-                ))
+                  ))
+                )}
+              </Box>
+
+              {/* PAGINATION */}
+              {totalPages > 1 && (
+                <Box display="flex" justifyContent="center" mt={8}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                    size={isMobile ? "medium" : "large"}
+                    showFirstButton
+                    showLastButton
+                    shape="rounded"
+                  />
+                </Box>
               )}
             </Box>
-
-            {/* Pagination */}
-            {events.length > 0 && totalPages > 1 && (
-              <Box display="flex" justifyContent="center" mt={3} sx={{ direction: 'ltr' }}>
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  color="primary"
-                  size="medium"
-                />
-              </Box>
-            )}
-          </Box>
-        </Fade>
-      )}
-    </Container>
+          </Fade>
+        )}
+      </Container>
+    </Box>
   );
 }
