@@ -1,14 +1,14 @@
 import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 
-const HERO_IMAGE_URL = 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop';
+const HERO_IMAGE_URL = '/herosectionimage.png';
 
 export default function HeroSection({ isMobile, children }) {
     return (
         <Box
             sx={{
                 position: 'relative',
-                height: { xs: 320, md: 480 }, // Taller on mobile to fit text
+                height: { xs: 200, md: 280 }, // Taller on mobile to fit text
                 width: '100%',
                 bgcolor: '#ebf2fa',
                 overflow: 'visible',
@@ -34,7 +34,7 @@ export default function HeroSection({ isMobile, children }) {
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
-                    opacity: 0.15,
+                    opacity: 0.4,
                     zIndex: 0
                 }}
             />

@@ -8,7 +8,7 @@ export const DATE_FILTERS = [
 
 // Building filter options
 export const BUILDING_FILTERS = [
-  { label: 'All', value: 'all' },
+  { label: 'All Building', value: 'all' },
   { label: 'Building 1', value: 'Building 1' },
   { label: 'Building 2', value: 'Building 2' },
   { label: 'Food Court', value: 'Food Court' },
