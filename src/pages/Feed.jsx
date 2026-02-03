@@ -26,12 +26,14 @@ import { PAGE_SIZE } from '../constants/dateFilters';
 
 import HeroSection from '../components/HeroSection';
 import FilterBar from '../components/FilterBar';
+import { useRefresh } from '../contexts/RefreshContext'; // <--- Import Refresh Hook
 
 
 export default function Feed() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams, setSearchParams] = useSearchParams();
+  const { refreshKey, triggerRefresh } = useRefresh(); // <--- Use Global Refresh
 
   // --- STATE ---
   const [events, setEvents] = useState([]);
@@ -39,7 +41,7 @@ export default function Feed() {
   const [totalPages, setTotalPages] = useState(1);
   const [viewMode, setViewMode] = useState('grid');
 
-  console.log(events)
+
 
   // Local state for inputs
   const [localSearch, setLocalSearch] = useState(searchParams.get('search') || '');
@@ -70,7 +72,7 @@ export default function Feed() {
     } finally {
       setLoading(false);
     }
-  }, [buildingFilter, dateFilter, searchQuery, currentPage]);
+  }, [buildingFilter, dateFilter, searchQuery, currentPage, refreshKey]); // <--- Add refreshKey
 
   useEffect(() => {
     fetchEvents();
@@ -95,8 +97,8 @@ export default function Feed() {
   };
 
   const handleRefreshEvents = useCallback(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    triggerRefresh(); 
+  }, [triggerRefresh]);
 
   /* ---------------- UI ---------------- */
   return (

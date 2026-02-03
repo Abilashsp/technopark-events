@@ -4,6 +4,14 @@ import { eventService } from "../services/eventService";
 import { validateEventTime } from "../utils/dateTimeHelpers";
 import { BUILDINGS } from "../constants/buildings";
 
+const formatToLocalISO = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const offsetMs = date.getTimezoneOffset() * 60000; 
+  const localDate = new Date(date.getTime() - offsetMs);
+  return localDate.toISOString().slice(0, 16); 
+};
+
 export const useEventForm = (open, eventToEdit, onSuccess, onClose) => {
   const isEditMode = Boolean(eventToEdit?.id);
   const [loading, setLoading] = useState(false);
@@ -30,7 +38,7 @@ export const useEventForm = (open, eventToEdit, onSuccess, onClose) => {
         title: eventToEdit.title || "",
         description: eventToEdit.description || "",
         building: eventToEdit.building || BUILDINGS[0],
-        date: eventToEdit.event_date ? new Date(eventToEdit.event_date).toISOString().slice(0, 16) : "",
+        date: formatToLocalISO(eventToEdit.event_date),
         image: null,
       });
       setImagePreview(eventToEdit.image_url || null);
@@ -42,6 +50,26 @@ export const useEventForm = (open, eventToEdit, onSuccess, onClose) => {
     setLoading(false);
   }, [open, isEditMode, eventToEdit, initialData]);
 
+  // --- HELPER: Date Validation Logic ---
+  const checkDateValidity = (dateStr) => {
+    if (!dateStr) return "Please select a date";
+    
+    const selectedDate = new Date(dateStr);
+    const now = new Date();
+
+    // 1. Check if date is in the past
+    if (selectedDate < now) {
+      return "Event time cannot be in the past";
+    }
+
+    // 2. Check 8 AM - 6 PM range
+    if (!validateEventTime(dateStr)) {
+      return "Event time must be between 8 AM and 6 PM";
+    }
+
+    return null; // No error
+  };
+
   // --- Handlers ---
 
   const handleChange = (e) => {
@@ -51,8 +79,11 @@ export const useEventForm = (open, eventToEdit, onSuccess, onClose) => {
 
   const handleDateChange = (e) => {
     const date = e.target.value;
-    if (!validateEventTime(date)) setErrorMsg("Event time must be between 8 AM and 6 PM");
-    else setErrorMsg("");
+    const error = checkDateValidity(date);
+    
+    if (error) setErrorMsg(error);
+    else setErrorMsg(""); // Clear error if valid
+
     setFormData((prev) => ({ ...prev, date }));
   };
 
@@ -83,11 +114,14 @@ export const useEventForm = (open, eventToEdit, onSuccess, onClose) => {
       setLoading(true);
       setErrorMsg("");
 
-      // Validation
+      // --- VALIDATION ---
       if (!formData.title.trim()) throw new Error("Please enter an event title");
       if (!formData.building) throw new Error("Please select a venue");
-      if (!formData.date) throw new Error("Please select a date");
-      if (!validateEventTime(formData.date)) throw new Error("Time must be 8 AM – 6 PM");
+      
+      // Strict Date Validation on Submit
+      const dateError = checkDateValidity(formData.date);
+      if (dateError) throw new Error(dateError);
+
       if (!isEditMode && !formData.image) throw new Error("Please upload a cover image");
       if (isEditMode && !formData.image && !imagePreview) throw new Error("Event must have an image");
 
@@ -137,6 +171,8 @@ export const useEventForm = (open, eventToEdit, onSuccess, onClose) => {
         formData.title !== eventToEdit.title ||
         formData.description !== eventToEdit.description ||
         formData.building !== eventToEdit.building ||
+        // Loose comparison for date to avoid minor ISO diffs
+        new Date(formData.date).getTime() !== new Date(formatToLocalISO(eventToEdit.event_date)).getTime() ||
         formData.image !== null
       );
     }

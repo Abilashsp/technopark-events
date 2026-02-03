@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  AppBar, Toolbar, Typography, Button, Box, Avatar, Menu, MenuItem, 
+  AppBar, Toolbar, Typography, Button, Box, Avatar, Menu, MenuItem,
   IconButton, Tooltip, useMediaQuery, useTheme, CircularProgress, Chip
 } from "@mui/material";
 import {
@@ -9,28 +9,30 @@ import {
 import { Link } from "react-router-dom";
 
 // 1. Context & Service Imports
+import { useRefresh } from "../contexts/RefreshContext"; // Import Refresh Hook
 import { useAuth } from "../contexts/AuthContext";
 import { useDialog, DIALOG_TYPES } from "../contexts/DialogContext"; // Global Dialog Hook
 
 // 2. Component Imports
-import EventFormDialog from "./dialogs/EventFormDialog"; 
+import EventFormDialog from "./dialogs/EventFormDialog";
 
 export default function Navbar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  
+
   // Hooks
   const { user, isAdmin, loading: authLoading, signInWithGoogle, signOut } = useAuth();
   const { openDialog } = useDialog(); // <--- Use Global Dialogs
-  
+  const { triggerRefresh } = useRefresh(); // <--- Use Refresh Hook
+
   // Local State
   const [anchorEl, setAnchorEl] = useState(null);
   const [createEventOpen, setCreateEventOpen] = useState(false); // Only state needed now
 
-  const adminColor = "#ff9800"; 
+  const adminColor = "#ff9800";
 
   /* ================= HANDLERS ================= */
-  
+
   const handleLogin = async () => {
     await signInWithGoogle();
   };
@@ -63,8 +65,8 @@ export default function Navbar() {
   };
 
   const handleEventSuccess = () => {
-     // Optional: Trigger global refresh if needed
-     console.log("Event created");
+    triggerRefresh(); // Trigger global refresh
+    console.log("Event created - Refresh Triggered");
   };
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
@@ -84,7 +86,7 @@ export default function Navbar() {
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
-          
+
           {/* LEFT: LOGO */}
           <Box display="flex" alignItems="center" gap={1}>
             <Typography
@@ -214,10 +216,10 @@ export default function Navbar() {
           </Box>
         </Toolbar>
       </AppBar>
-      
 
 
-      <EventFormDialog 
+
+      <EventFormDialog
         open={createEventOpen}
         onClose={() => setCreateEventOpen(false)}
         onSuccess={handleEventSuccess}

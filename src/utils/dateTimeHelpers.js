@@ -68,20 +68,22 @@ export const getDateRange = (filterType) => {
         from: today.toISOString(),
         to: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()
       };
-    case 'week':
+    case 'week': {
       const weekEnd = new Date(today);
       weekEnd.setDate(today.getDate() + 7);
       return {
         from: today.toISOString(),
         to: weekEnd.toISOString()
       };
-    case 'month':
+    }
+    case 'month': {
       const monthEnd = new Date(today);
       monthEnd.setDate(today.getDate() + 30);
       return {
         from: today.toISOString(),
         to: monthEnd.toISOString()
       };
+    }
     default:
       return null;
   }

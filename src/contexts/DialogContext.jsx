@@ -1,7 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { 
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, 
-  Typography, TextField, RadioGroup, FormControlLabel, Radio, Stack 
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions, Button,
+  Typography, TextField, RadioGroup, FormControlLabel, Radio, Stack
 } from "@mui/material";
 
 const DialogContext = createContext();
@@ -42,11 +43,11 @@ export const DialogProvider = ({ children }) => {
     <DialogContext.Provider value={{ openDialog, closeDialog }}>
       {children}
       {/* THE SINGLE GLOBAL DIALOG COMPONENT */}
-      <GlobalDialog 
-        open={dialogState.isOpen} 
-        type={dialogState.type} 
-        {...dialogState.props} 
-        onClose={closeDialog} 
+      <GlobalDialog
+        open={dialogState.isOpen}
+        type={dialogState.type}
+        {...dialogState.props}
+        onClose={closeDialog}
       />
     </DialogContext.Provider>
   );
@@ -132,7 +133,7 @@ const GlobalDialog = ({ open, type, onClose, onConfirm, title, message, ...other
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{title}</DialogTitle>
-      
+
       <DialogContent dividers>
         {renderContent()}
       </DialogContent>
@@ -143,9 +144,9 @@ const GlobalDialog = ({ open, type, onClose, onConfirm, title, message, ...other
             {other.cancelText || "Cancel"}
           </Button>
         )}
-        <Button 
-          variant="contained" 
-          color={confirmBtnColor} 
+        <Button
+          variant="contained"
+          color={confirmBtnColor}
           onClick={type === DIALOG_TYPES.LOGIN ? onClose : handleConfirm}
           disabled={loading || disableConfirm}
         >

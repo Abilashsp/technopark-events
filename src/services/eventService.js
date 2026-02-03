@@ -69,7 +69,7 @@ export const eventService = {
       .select("*", { count: "exact" })
       .in("status", ["active", "under_review"])
       .order("event_date", { ascending: true })
-      .range(offset, offset + pageSize - 1);
+      .range(offset, offset + pageSize - 1)
 
     // 🏢 Building filter
     if (filter !== "All") {
@@ -110,6 +110,7 @@ export const eventService = {
       .insert([eventData])
       .select()
       .single();
+
 
     if (error) throw error;
     return data;
