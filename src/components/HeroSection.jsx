@@ -3,7 +3,7 @@ import { Box, Container, Typography } from '@mui/material';
 
 const HERO_IMAGE_URL = '/herosectionimage.png';
 
-export default function HeroSection({ isMobile, children }) {
+export default function HeroSection({ children }) {
     return (
         <Box
             sx={{
