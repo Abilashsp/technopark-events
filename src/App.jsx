@@ -21,6 +21,7 @@ function App() {
               <Navbar />
               <Routes>
                 <Route path="/" element={<Feed />} />
+                <Route path="/my-events" element={<Feed mode="my-events" />} />
                 <Route
                   path="/admin"
                   element={

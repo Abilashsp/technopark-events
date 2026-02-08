@@ -1,10 +1,29 @@
 import React, { useState } from "react";
 import {
-  AppBar, Toolbar, Typography, Button, Box, Avatar, Menu, MenuItem,
-  IconButton, Tooltip, useMediaQuery, useTheme, CircularProgress, Chip
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  Avatar,
+  Menu,
+  MenuItem,
+  IconButton,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+  CircularProgress,
+  Chip,
+  
 } from "@mui/material";
 import {
-  AddCircleOutline, Google, Add, AdminPanelSettings, Logout, Lock
+  AddCircleOutline,
+  Google,
+  Add,
+  AdminPanelSettings,
+  Logout,
+  Lock,
+  EventNote
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 
@@ -21,7 +40,13 @@ export default function Navbar() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Hooks
-  const { user, isAdmin, loading: authLoading, signInWithGoogle, signOut } = useAuth();
+  const {
+    user,
+    isAdmin,
+    loading: authLoading,
+    signInWithGoogle,
+    signOut,
+  } = useAuth();
   const { openDialog } = useDialog(); // <--- Use Global Dialogs
   const { triggerRefresh } = useRefresh(); // <--- Use Refresh Hook
 
@@ -48,7 +73,7 @@ export default function Navbar() {
       onConfirm: async () => {
         await signOut();
         window.location.reload();
-      }
+      },
     });
   };
 
@@ -57,7 +82,7 @@ export default function Navbar() {
     if (!user) {
       openDialog(DIALOG_TYPES.LOGIN, {
         title: "Login Required",
-        message: "You must be signed in to post an event."
+        message: "You must be signed in to post an event.",
       });
     } else {
       setCreateEventOpen(true);
@@ -86,7 +111,6 @@ export default function Navbar() {
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
-
           {/* LEFT: LOGO */}
           <Box display="flex" alignItems="center" gap={1}>
             <Typography
@@ -134,7 +158,10 @@ export default function Navbar() {
                     <IconButton
                       onClick={handlePostClick}
                       color="primary"
-                      sx={{ bgcolor: "#e3f2fd", "&:hover": { bgcolor: "#bbdefb" } }}
+                      sx={{
+                        bgcolor: "#e3f2fd",
+                        "&:hover": { bgcolor: "#bbdefb" },
+                      }}
                     >
                       <Add />
                     </IconButton>
@@ -160,7 +187,9 @@ export default function Navbar() {
                     cursor: "pointer",
                     width: 36,
                     height: 36,
-                    border: isAdmin ? `2px solid ${adminColor}` : "2px solid #fff",
+                    border: isAdmin
+                      ? `2px solid ${adminColor}`
+                      : "2px solid #fff",
                     boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
                   }}
                 />
@@ -173,6 +202,19 @@ export default function Navbar() {
                   transformOrigin={{ horizontal: "right", vertical: "top" }}
                   anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 >
+                  {/* NEW: My Events Link */}
+                  <MenuItem
+                    component={Link}
+                    to="/my-events"
+                    onClick={handleClose}
+                  >
+                    <EventNote
+                      fontSize="small"
+                      sx={{ mr: 1.5, color: "text.secondary" }}
+                    />
+                    My Events
+                  </MenuItem>
+
                   {isAdmin && (
                     <MenuItem
                       component={Link}
@@ -186,7 +228,10 @@ export default function Navbar() {
                   )}
 
                   <MenuItem onClick={handleLogoutClick}>
-                    <Logout fontSize="small" sx={{ mr: 1.5, color: "text.secondary" }} />
+                    <Logout
+                      fontSize="small"
+                      sx={{ mr: 1.5, color: "text.secondary" }}
+                    />
                     Logout
                   </MenuItem>
                 </Menu>
@@ -216,8 +261,6 @@ export default function Navbar() {
           </Box>
         </Toolbar>
       </AppBar>
-
-
 
       <EventFormDialog
         open={createEventOpen}

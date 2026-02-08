@@ -94,7 +94,11 @@ export default function EventFormDialog({ open, onClose, onSuccess, eventToEdit 
               <TextField
                 fullWidth label="Event Title" name="title"
                 value={formData.title} onChange={handlers.handleChange}
-                placeholder="Ex: Annual Tech Symposium" variant="outlined" sx={{ bgcolor: 'white' }}
+                   slotProps={{
+    htmlInput: { maxLength: 15}
+  }}
+                placeholder="Event Name" variant="outlined" sx={{ bgcolor: 'white' }}
+                helperText={`${formData.title.length} / 15 characters`}
                 InputProps={{ startAdornment: <InputAdornment position="start"><Title color="action" /></InputAdornment> }}
               />
             </Grid>
@@ -129,6 +133,10 @@ export default function EventFormDialog({ open, onClose, onSuccess, eventToEdit 
             <TextField
               multiline rows={4} fullWidth label="Detailed Description" name="description"
               value={formData.description} onChange={handlers.handleChange}
+            slotProps={{
+    htmlInput: { maxLength: 50}
+  }}
+  helperText={`${formData.description.length} / 50 characters`}
               placeholder="What is this event about? Who should attend?" sx={{ bgcolor: 'white' }}
               InputProps={{ startAdornment: <InputAdornment position="start" sx={{ mt: 1.5 }}><Description color="action" /></InputAdornment> }}
             />

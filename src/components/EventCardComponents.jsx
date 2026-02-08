@@ -1,5 +1,10 @@
-import { Box, Typography, CardMedia, IconButton, Tooltip, CircularProgress, Stack } from "@mui/material";
-import { Share, Edit, Delete, Flag, ReportProblem, AccessTime, LocationOn } from "@mui/icons-material";
+import React from "react";
+import { 
+  Box, Typography, IconButton, Tooltip, CircularProgress, Stack, Button 
+} from "@mui/material";
+import { 
+  Share, Edit, Delete, ReportProblem, AccessTime, LocationOn 
+} from "@mui/icons-material";
 import { formatTimeDisplay } from "../utils/dateTimeHelpers";
 
 // 1. Overlay for Reported Events
@@ -43,7 +48,7 @@ export const DateBadge = ({ date, small = false }) => {
   );
 };
 
-// 3. Action Buttons (Refactored to be cleaner)
+// 3. Action Buttons (Unified Icon Actions + Your Report Button)
 export const CardActions = ({ isOwner, reported, loading, listView, onShare, onEdit, onDelete, onReport }) => {
   const btnStyle = (color) => ({
     color: listView ? color || "text.secondary" : "white",
@@ -52,59 +57,55 @@ export const CardActions = ({ isOwner, reported, loading, listView, onShare, onE
   });
 
   return (
-    <>
-      <Tooltip title="Share"><IconButton onClick={onShare} size="small" sx={btnStyle()}><Share fontSize="small" /></IconButton></Tooltip>
-      
-      {isOwner ? (
-        <>
-          <IconButton onClick={onEdit} size="small" sx={btnStyle("primary.main")}><Edit fontSize="small" /></IconButton>
-          <IconButton onClick={onDelete} size="small" sx={btnStyle("error.main")}><Delete fontSize="small" /></IconButton>
-        </>
-      ) : (
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+      {/* Left side: Standard Icons */}
+      <Stack direction="row" spacing={0.5}>
+        <Tooltip title="Share">
+          <IconButton onClick={onShare} size="small" sx={btnStyle()}>
+            <Share fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        
+        {isOwner && (
+          <>
+            <Tooltip title="Edit">
+              <IconButton onClick={onEdit} size="small" sx={btnStyle("primary.main")}>
+                <Edit fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton onClick={onDelete} size="small" sx={btnStyle("error.main")}>
+                <Delete fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+      </Stack>
+
+      {/* Right side: Your modified Report Button */}
+      {!isOwner && (
         <Tooltip title={reported ? "Reported" : "Report"}>
-          <IconButton 
+          <Button 
             onClick={onReport} 
             disabled={loading || reported} 
             size="small"
-            sx={{
-              ...btnStyle(reported ? "error.main" : "text.secondary"),
-              ...(reported && !listView && { bgcolor: "rgba(211, 47, 47, 0.8)" })
+            sx={{ 
+              textTransform: 'none', 
+              fontWeight: 700, 
+              fontSize: '0.75rem',
+              minWidth: 'auto',
+              p: 0.5,
+              color: reported ? "" : "red"
             }}
           >
-            {loading ? <CircularProgress size={16} color="inherit" /> : <Flag fontSize="small" />}
-          </IconButton>
+            {loading ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : (
+              reported ? "Reported" : "Report"
+            )}
+          </Button>
         </Tooltip>
       )}
-    </>
+    </Box>
   );
 };
-
-// 4. Common Event Info Component
-export const EventInfo = ({ title, date, building, description, compact = false }) => (
-  <Box sx={{ flex: 1, display: "flex", flexDirection: "column", p: 2 }}>
-    <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.2, mb: 1, fontSize: compact ? "1rem" : "1.1rem" }} noWrap={compact}>
-      {title}
-    </Typography>
-
-    <Stack direction="row" spacing={2} sx={{ mb: 1.5 }}>
-      <Box display="flex" alignItems="center" gap={0.5}>
-        <AccessTime sx={{ fontSize: 16, color: "#d32f2f" }} />
-        <Typography variant="body2" fontWeight={600} color="text.secondary" fontSize="0.8rem">
-          {formatTimeDisplay(date)}
-        </Typography>
-      </Box>
-      <Box display="flex" alignItems="center" gap={0.5}>
-        <LocationOn sx={{ fontSize: 18, color: "#757575" }} />
-        <Typography variant="body2" color="text.secondary" fontSize="0.8rem" noWrap maxWidth={100}>
-          {building}
-        </Typography>
-      </Box>
-    </Stack>
-
-    <Typography variant="body2" color="text.secondary" sx={{
-      display: "-webkit-box", WebkitLineClamp: compact ? 3 : 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: 1.5
-    }}>
-      {description}
-    </Typography>
-  </Box>
-);

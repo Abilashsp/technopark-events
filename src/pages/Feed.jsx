@@ -9,7 +9,6 @@ import {
   Pagination,
   IconButton,
   Tooltip,
-  Paper,
   Stack,
   useTheme,
   useMediaQuery
@@ -17,6 +16,7 @@ import {
 import {
   ViewAgenda,
   ViewWeek,
+  EventBusy,
 } from '@mui/icons-material';
 import { useSearchParams } from 'react-router-dom';
 
@@ -26,14 +26,19 @@ import { PAGE_SIZE } from '../constants/dateFilters';
 
 import HeroSection from '../components/HeroSection';
 import FilterBar from '../components/FilterBar';
-import { useRefresh } from '../contexts/RefreshContext'; // <--- Import Refresh Hook
+import { useRefresh } from '../contexts/RefreshContext';
 
-
-export default function Feed() {
+/**
+ * Feed Component
+ * @param {string} mode - 'public' for discovery or 'my-events' for management
+ */
+export default function Feed({ mode = 'public' }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams, setSearchParams] = useSearchParams();
-  const { refreshKey, triggerRefresh } = useRefresh(); // <--- Use Global Refresh
+  const { refreshKey, triggerRefresh } = useRefresh();
+
+  const isMyEventsMode = mode === 'my-events';
 
   // --- STATE ---
   const [events, setEvents] = useState([]);
@@ -41,30 +46,46 @@ export default function Feed() {
   const [totalPages, setTotalPages] = useState(1);
   const [viewMode, setViewMode] = useState('grid');
 
-
-
-  // Local state for inputs
-  const [localSearch, setLocalSearch] = useState(searchParams.get('search') || '');
-  const [localBuilding, setLocalBuilding] = useState(searchParams.get('building') || 'All');
-  const [localDate, setLocalDate] = useState(searchParams.get('date') || 'all');
-
-  // URL params
+  // URL params logic preserved
   const buildingFilter = searchParams.get('building') || 'All';
   const dateFilter = searchParams.get('date') || 'all';
   const searchQuery = searchParams.get('search') || '';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
-  /* ---------------- FETCH EVENTS ---------------- */
+  // Local state for inputs (used in FilterBar)
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [localBuilding, setLocalBuilding] = useState(buildingFilter);
+  const [localDate, setLocalDate] = useState(dateFilter);
+
+  // Synchronize local state if URL changes (e.g., browser back button)
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+    setLocalBuilding(buildingFilter);
+    setLocalDate(dateFilter);
+  }, [searchQuery, buildingFilter, dateFilter]);
+
+  /* ---------------- FETCH LOGIC ---------------- */
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await eventService.fetchEvents(
-        buildingFilter,
-        dateFilter === 'all' ? null : dateFilter,
-        searchQuery,
-        currentPage,
-        PAGE_SIZE
-      );
+      let result;
+      if (isMyEventsMode) {
+        // Management View: Only user events, ignore building/date filters
+        result = await eventService.fetchMyEvents(
+          currentPage,
+          PAGE_SIZE,
+          searchQuery
+        );
+      } else {
+        // Discovery View: All active events with filters
+        result = await eventService.fetchEvents(
+          buildingFilter,
+          dateFilter === 'all' ? null : dateFilter,
+          searchQuery,
+          currentPage,
+          PAGE_SIZE
+        );
+      }
       setEvents(result.events || []);
       setTotalPages(result.totalPages || 1);
     } catch (error) {
@@ -72,7 +93,7 @@ export default function Feed() {
     } finally {
       setLoading(false);
     }
-  }, [buildingFilter, dateFilter, searchQuery, currentPage, refreshKey]); // <--- Add refreshKey
+  }, [buildingFilter, dateFilter, searchQuery, currentPage, refreshKey, isMyEventsMode]);
 
   useEffect(() => {
     fetchEvents();
@@ -93,7 +114,8 @@ export default function Feed() {
     const params = new URLSearchParams(searchParams);
     params.set('page', value.toString());
     setSearchParams(params);
-    window.scrollTo({ top: 450, behavior: 'smooth' });
+    // Scroll to top of content area
+    window.scrollTo({ top: isMyEventsMode ? 0 : 450, behavior: 'smooth' });
   };
 
   const handleRefreshEvents = useCallback(() => {
@@ -102,24 +124,38 @@ export default function Feed() {
 
   /* ---------------- UI ---------------- */
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa', mt: 0, pt: 0 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
 
-      {/* ================= HERO SECTION ================= */}
-      <HeroSection isMobile={isMobile}>
-        <FilterBar
-          isMobile={isMobile}
-          localSearch={localSearch}
-          setLocalSearch={setLocalSearch}
-          handleTriggerSearch={handleTriggerSearch}
-          localBuilding={localBuilding}
-          setLocalBuilding={setLocalBuilding}
-          localDate={localDate}
-          setLocalDate={setLocalDate}
-        />
-      </HeroSection>
+      {/* ================= CONDITIONAL HEADER ================= */}
+      {!isMyEventsMode ? (
+        <HeroSection isMobile={isMobile}>
+          <FilterBar
+            isMobile={isMobile}
+            localSearch={localSearch}
+            setLocalSearch={setLocalSearch}
+            handleTriggerSearch={handleTriggerSearch}
+            localBuilding={localBuilding}
+            setLocalBuilding={setLocalBuilding}
+            localDate={localDate}
+            setLocalDate={setLocalDate}
+          />
+        </HeroSection>
+      ) : (
+        <Box sx={{ 
+          pt: { xs: 10, sm: 12 }, 
+          pb: 6, 
+          textAlign: 'center', 
+          bgcolor: 'white', 
+          borderBottom: '1px solid #eef2f6' 
+        }}>
+          <Typography variant="h4" fontWeight={900} color="primary">My Events</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>
+            Manage and track the events you have posted
+          </Typography>
+        </Box>
+      )}
 
-      {/* ================= MAIN CONTENT GRID ================= */}
-      <Container maxWidth="lg" sx={{ pb: 8 }}>
+      <Container maxWidth="lg" sx={{ pb: 8, mt: isMyEventsMode ? 4 : 0 }}>
 
         {/* VIEW TOGGLE */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
@@ -153,7 +189,7 @@ export default function Feed() {
           </Stack>
         </Box>
 
-        {/* LOADING STATE */}
+        {/* DATA LOAD */}
         {loading ? (
           <Box display="flex" justifyContent="center" height="40vh" alignItems="center">
             <CircularProgress size={50} thickness={4} />
@@ -161,7 +197,6 @@ export default function Feed() {
         ) : (
           <Fade in>
             <Box>
-              {/* CARDS GRID */}
               <Box
                 sx={{
                   display: viewMode === 'grid' ? 'grid' : 'flex',
@@ -173,22 +208,27 @@ export default function Feed() {
                 }}
               >
                 {events.length === 0 ? (
-                  <Box textAlign="center" py={8} gridColumn="1 / -1">
+                  <Box textAlign="center" py={10} gridColumn="1 / -1">
+                    <EventBusy sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
                     <Typography variant="h6" color="text.secondary">
-                      No events found matching your criteria.
+                      {isMyEventsMode 
+                        ? "You haven't posted any events yet." 
+                        : "No events found matching your criteria."}
                     </Typography>
-                    <Button
-                      variant="outlined"
-                      onClick={() => {
-                        setLocalSearch('');
-                        setLocalBuilding('All');
-                        setLocalDate('all');
-                        handleTriggerSearch();
-                      }}
-                      sx={{ mt: 2 }}
-                    >
-                      Clear Filters
-                    </Button>
+                    {!isMyEventsMode && (
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          setLocalSearch('');
+                          setLocalBuilding('All');
+                          setLocalDate('all');
+                          setSearchParams({}); // Clear URL
+                        }}
+                        sx={{ mt: 2 }}
+                      >
+                        Clear Filters
+                      </Button>
+                    )}
                   </Box>
                 ) : (
                   events.map((event) => (
@@ -211,8 +251,6 @@ export default function Feed() {
                     onChange={handlePageChange}
                     color="primary"
                     size={isMobile ? "medium" : "large"}
-                    showFirstButton
-                    showLastButton
                     shape="rounded"
                   />
                 </Box>

@@ -63,11 +63,13 @@ export const eventService = {
     pageSize = 12
   ) => {
     const offset = (page - 1) * pageSize;
-
+const today = new Date();
+    today.setHours(0, 0, 0, 0);
     let query = supabase
       .from("events")
       .select("*", { count: "exact" })
       .in("status", ["active", "under_review"])
+      .gte("event_date", today.toISOString())
       .order("event_date", { ascending: true })
       .range(offset, offset + pageSize - 1)
 
@@ -128,6 +130,33 @@ export const eventService = {
     return data;
   },
 
+/* ================= FETCH USER'S OWN EVENTS ================= */
+fetchMyEvents: async (page = 1, pageSize = 12, searchQuery = "") => {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("Not authenticated");
+
+  const offset = (page - 1) * pageSize;
+
+  let query = supabase
+    .from("events")
+    .select("*", { count: "exact" })
+    .eq("author_id", user.id) // Filter by logged-in user
+    .order("created_at", { ascending: false }) 
+    .range(offset, offset + pageSize - 1);
+
+  if (searchQuery.trim()) {
+    query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+  }
+
+  const { data, count, error } = await query;
+  if (error) throw error;
+
+  return {
+    events: data || [],
+    total: count || 0,
+    totalPages: Math.ceil((count || 0) / pageSize),
+  };
+},
   /* ================= REPORT EVENT ================= */
   reportEvent: async (eventId, reason, message = null) => {
     const {
