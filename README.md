@@ -1,52 +1,104 @@
-# Technopark Events - Hyper-local Campus News Feed
+# 🏢 Technopark Events – Hyper-local Campus News Feed
 
-A community-driven web application connecting people within the Technopark campus. Users can view and share events, offers, and news specific to their building.
+A community-driven web application designed for the Technopark campus, enabling people to **discover and share events, offers, and announcements** specific to their building or location.
 
-**Current Status:** MVP Planning / Frontend Development
-**Future Roadmap:** PCM Mobile App
+🔗 **GitHub Repository:**  
+https://github.com/Abilashsp/technopark-events
+
+---
+
+## 🎯 Problem Statement
+
+Many events within Technopark are **informal, community-driven, or location-specific** and never appear on official platforms.  
+Existing social media groups are often **noisy, unfocused, and unreliable** for campus-specific discovery.
+
+**Technopark Events** solves this by providing a **single, hyper-local feed** tailored to buildings and locations inside Technopark.
+
+---
 
 ## 🚀 Features (MVP)
 
-### 🟢 Public Feed (No Auth Required)
-- **Card View:** Visual feed of events with Image, Title, Date, and Building tags.
-- **Smart Filters:** Filter content by specific Building (e.g., "Building 4", "Food Court") or Time ("Today", "This Week").
-- **Search:** Basic text search for event titles.
+### 🟢 Public Feed (No Login Required)
+- Card-based event feed with **image, title, date, time, and building**
+- Read-only access for anonymous users
+- **Search & smart filters** by building, date, and status
 
-### 🔐 Posting & User Actions (Auth Required)
-- **Create Post:** Users must sign in (Google Auth planned) to upload.
-- **Anonymous Mode:** Checkbox to post without displaying the user's name publicly (Privacy).
-- **Report System:** Users can flag inappropriate content. (Logic: 5 reports = Auto-hide).
+### 🔐 Authenticated User Actions
+- Google OAuth login via Supabase
+- Create posts with:
+  - Title & description
+  - Event date & time
+  - Image upload
+  - Specific building / location
+- Edit & delete **only own posts**
+- Report inappropriate content for moderation
 
-### 🛡️ Safety & Moderation
-- **AI Content Filtering:** Automatic rejection of NSFW/Adult images during upload (Integration TBD).
-- **Identity Tracking:** All posts are linked to a user identity internally for accountability.
-- **Admin Dashboard:** Capability to ban users and review flagged posts.
+### 🛡️ Moderation & Safety
+- Report-based moderation workflow
+- Role-based access: **User / Admin**
+- Admin review panel for reported or pending posts
+
+---
+
+## 🧠 Moderation Roadmap
+
+- **Phase 1 (Current):** Manual admin moderation
+- **Phase 2 (Planned):** AI-based image & content moderation after user growth (300+ users)
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React.js, Tailwind CSS
-- **Backend:** *To Be Decided*
-- **Database:** *To Be Decided*
-- **Authentication:** Google OAuth (Implementation TBD)
-- **Image Storage:** *To Be Decided*
+### Frontend
+- React
+- Vite
+- Material UI (MUI)
 
-## 📂 Data Requirements (Logical Model)
+### Backend (BaaS)
+- Supabase
+  - PostgreSQL (Database)
+  - Auth (Google OAuth)
+  - Storage (Image uploads – Free tier 5GB)
+  - Realtime APIs
 
-### User Entity
-- **Identity:** Name, Email, Profile Picture (from Auth Provider)
-- **Role:** User / Admin
-- **Status:** Active / Banned
+---
 
-### Post Entity
-- **Content:** Title (Max 50 chars), Description, Image URL
-- **Context:** Building Name (Dropdown selection), Event Date/Time
-- **Owner:** Author ID (Linked to User)
-- **Settings:** Is Anonymous? (Boolean)
-- **Moderation:** Report Count, Visibility Status (Active/Hidden)
+## 🧩 Data Model
 
-## 🏃‍♂️ Getting Started (Frontend)
+### User
+- Name, Email, Profile Image (from Google Auth)
+- Role: `user` | `admin`
+- Status: `active` | `under_review` | `rejected`
 
-1. **Clone the repository**
-   ```bash
-   git clone [https://github.com/yourusername/technopark-events.git](https://github.com/yourusername/technopark-events.git)
-   cd technopark-events
+### Post
+- Title & description
+- Event date & time
+- Image URL (Supabase Storage)
+- Building / location
+- Owner (User reference)
+- Report count & visibility status
+
+---
+
+## 🔐 Roles & Permissions
+
+### Regular User
+- Public:
+  - View, search, and filter events
+- Logged-in:
+  - Create posts
+  - Edit/delete own posts
+  - Report posts
+
+### Admin
+- Review reported posts
+- Accept / reject posts
+- Manage user status if required
+
+---
+
+## 📌 Project Status
+
+- **Stage:** MVP development
+- **Next:** Admin moderation panel & AI moderation
+- **Future:** Mobile app version
