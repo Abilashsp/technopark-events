@@ -23,6 +23,7 @@ import { useSearchParams } from 'react-router-dom';
 import EventCard from '../components/EventCard';
 import { eventService } from '../services/eventService';
 import { PAGE_SIZE } from '../constants/dateFilters';
+import {fetchEventsPublic} from "../api/eventsApi"
 
 import HeroSection from '../components/HeroSection';
 import FilterBar from '../components/FilterBar';
@@ -64,36 +65,47 @@ export default function Feed({ mode = 'public' }) {
     setLocalDate(dateFilter);
   }, [searchQuery, buildingFilter, dateFilter]);
 
+  console.log(isMyEventsMode,"ismyeventmode")
+
   /* ---------------- FETCH LOGIC ---------------- */
-  const fetchEvents = useCallback(async () => {
+ const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
       let result;
+
       if (isMyEventsMode) {
-        // Management View: Only user events, ignore building/date filters
+        // 🔐 AUTHENTICATED (Supabase)
         result = await eventService.fetchMyEvents(
           currentPage,
           PAGE_SIZE,
           searchQuery
         );
       } else {
-        // Discovery View: All active events with filters
-        result = await eventService.fetchEvents(
-          buildingFilter,
-          dateFilter === 'all' ? null : dateFilter,
-          searchQuery,
-          currentPage,
-          PAGE_SIZE
-        );
+        // 🌍 PUBLIC API (NO API KEY)
+        result = await fetchEventsPublic({
+          building: buildingFilter,
+          date: dateFilter,
+          search: searchQuery,
+          page: currentPage,
+          pageSize: PAGE_SIZE,
+        });
       }
+
       setEvents(result.events || []);
       setTotalPages(result.totalPages || 1);
-    } catch (error) {
-      console.error("Failed to fetch events", error);
+    } catch (err) {
+      console.error("Failed to fetch events:", err);
     } finally {
       setLoading(false);
     }
-  }, [buildingFilter, dateFilter, searchQuery, currentPage, refreshKey, isMyEventsMode]);
+  }, [
+    buildingFilter,
+    dateFilter,
+    searchQuery,
+    currentPage,
+    refreshKey,
+    isMyEventsMode,
+  ]);
 
   useEffect(() => {
     fetchEvents();

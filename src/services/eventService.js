@@ -331,3 +331,90 @@ console.log("Deleting image at error:", error,"+ data ",data);
     if (error) throw error;
   },
 };
+
+function getDateRange(range) {
+  const now = new Date();
+  const startToday = new Date();
+  startToday.setHours(0, 0, 0, 0);
+
+  switch (range) {
+    case "today":
+      return { from: startToday, to: new Date(startToday.getTime() + 86400000) };
+
+    case "week": {
+      const from = new Date(startToday);
+      from.setDate(from.getDate() - 7);
+      return { from, to: now };
+    }
+
+    case "month":
+      return {
+        from: new Date(now.getFullYear(), now.getMonth(), 1),
+        to: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
+      };
+
+    default:
+      return null;
+  }
+}
+
+export async function handler(event) {
+  try {
+    const q = event.queryStringParameters || {};
+
+    const filter = q.filter || "All";
+    const dateRange = q.dateRange || "all";
+    const search = q.search || "";
+    const page = Number(q.page || 1);
+    const pageSize = Number(q.pageSize || 12);
+    const offset = (page - 1) * pageSize;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let query = supabase
+      .from("events")
+      .select("*", { count: "exact" })
+      .in("status", ["active", "under_review"])
+      .gte("event_date", today.toISOString())
+      .order("event_date", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+
+    if (filter !== "All") query = query.eq("building", filter);
+
+    const bounds = getDateRange(dateRange);
+    if (bounds) {
+      query = query
+        .gte("event_date", bounds.from.toISOString())
+        .lte("event_date", bounds.to.toISOString());
+    }
+
+    if (search.trim()) {
+      query = query.or(
+        `title.ilike.%${search}%,description.ilike.%${search}%`
+      );
+    }
+
+    const { data, count, error } = await query;
+    if (error) throw error;
+
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=60",
+      },
+      body: JSON.stringify({
+        events: data,
+        total: count,
+        page,
+        totalPages: Math.ceil(count / pageSize),
+      }),
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+}
