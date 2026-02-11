@@ -101,4 +101,7 @@ Existing social media groups are often **noisy, unfocused, and unreliable** for 
 
 - **Stage:** MVP development
 - **Next:** Admin moderation panel & AI moderation
-- **Future:** Mobile app version
+- **Future:**
+   1. Mobile app version
+   2. geolocation when uplaod events
+   3. ai moderation
