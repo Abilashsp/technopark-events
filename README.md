@@ -59,7 +59,8 @@ Existing social media groups are often **noisy, unfocused, and unreliable** for 
   - PostgreSQL (Database)
   - Auth (Google OAuth)
   - Storage (Image uploads – Free tier 5GB)
-  - Realtime APIs
+  - APIs(public view)
+  - Sdk for personal data for protection
 
 ---
 
