@@ -4,6 +4,7 @@ import {
   Snackbar, Alert, useMediaQuery, useTheme, Divider 
 } from "@mui/material";
 import { AccessTime, LocationOn } from "@mui/icons-material";
+import {formatEventDateTime} from "../utils/dateTimeHelpers"
 
 import { useAuth } from "../contexts/AuthContext";
 import { useDialog, DIALOG_TYPES } from "../contexts/DialogContext"; 
@@ -41,13 +42,15 @@ export default function EventCard({ event,initialReported, onEventUpdated, isLis
 const handleShare = async (e) => {
   e.stopPropagation();
 
-  const appLink = "https://techno-events.netlify.app/"; // Play Store / Website
+  const appLink = "https://techno-events.netlify.app/";
+
+  const { date, time } = formatEventDateTime(event.event_date);
 
   const shareText = `
 🎉 Event: ${event.title}
-📅 Date: ${event.event_date}
-⏰ Time: ${event.event_time || "N/A"}
-📍 Location: ${event.location || event.building || "Technopark"}
+📅 Date: ${date}
+⏰ Time: ${time}
+📍 Location: ${event.building || event.location || "Technopark"}
 📝 Description: ${event.description || "No description available"}
 
 📲 Discover more events on the Technopark Events App:
@@ -55,14 +58,10 @@ ${appLink}
 `.trim();
 
   if (navigator.share) {
-    try {
-      await navigator.share({
-        title: event.title,
-        text: shareText,
-      });
-    } catch (err) {
-      // user cancelled share – no action needed
-    }
+    await navigator.share({
+      title: event.title,
+      text: shareText,
+    });
   } else {
     await navigator.clipboard.writeText(shareText);
     setFeedback({
@@ -72,6 +71,7 @@ ${appLink}
     });
   }
 };
+
 
  const handleReportClick = (e) => {
     e.stopPropagation();

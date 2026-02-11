@@ -88,3 +88,25 @@ export const getDateRange = (filterType) => {
       return null;
   }
 };
+
+export const formatEventDateTime = (isoString) => {
+  if (!isoString) {
+    return { date: "N/A", time: "N/A" };
+  }
+
+  const dateObj = new Date(isoString);
+
+  const date = dateObj.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  const time = dateObj.toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return { date, time };
+};
