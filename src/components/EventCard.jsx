@@ -38,18 +38,40 @@ export default function EventCard({ event,initialReported, onEventUpdated, isLis
   // Check Report Status with Cache Logic
 
 
-  const handleShare = async (e) => {
-    e.stopPropagation();
-    const shareUrl = `${window.location.origin}/events/${event.id}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: event.title, url: shareUrl });
-      } catch (err) { /* silent fail */ }
-    } else {
-      await navigator.clipboard.writeText(shareUrl);
-      setFeedback({ open: true, msg: "Link copied to clipboard!", severity: "success" });
+const handleShare = async (e) => {
+  e.stopPropagation();
+
+  const appLink = "https://techno-events.netlify.app/"; // Play Store / Website
+
+  const shareText = `
+🎉 Event: ${event.title}
+📅 Date: ${event.event_date}
+⏰ Time: ${event.event_time || "N/A"}
+📍 Location: ${event.location || event.building || "Technopark"}
+📝 Description: ${event.description || "No description available"}
+
+📲 Discover more events on the Technopark Events App:
+${appLink}
+`.trim();
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: event.title,
+        text: shareText,
+      });
+    } catch (err) {
+      // user cancelled share – no action needed
     }
-  };
+  } else {
+    await navigator.clipboard.writeText(shareText);
+    setFeedback({
+      open: true,
+      msg: "Event details copied to clipboard!",
+      severity: "success",
+    });
+  }
+};
 
  const handleReportClick = (e) => {
     e.stopPropagation();
