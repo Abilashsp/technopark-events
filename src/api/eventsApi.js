@@ -1,5 +1,5 @@
 
-const Api= "http://localhost:4000"
+
 
 export async function fetchEventsPublic({
   building = "All",
@@ -14,7 +14,7 @@ export async function fetchEventsPublic({
     pageSize,
   });
 
-  const res = await fetch(`${Api}/api/events?${params.toString()}`);
+  const res = await fetch(`/api/events?${params.toString()}`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch events");
