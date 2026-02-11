@@ -53,7 +53,7 @@ export default function EventCard({ event,initialReported, onEventUpdated, isLis
 
  const handleReportClick = (e) => {
     e.stopPropagation();
-    if (!user) return openDialog(DIALOG_TYPES.LOGIN, { title: "Login Required" });
+    if (!user) return openDialog(DIALOG_TYPES.LOGIN, { title: "Login Required",message:"Should login for report this one" });
     
     openDialog(DIALOG_TYPES.REPORT, {
       title: "Report Event",
@@ -164,6 +164,7 @@ export default function EventCard({ event,initialReported, onEventUpdated, isLis
                 e.stopPropagation();
                 openDialog(DIALOG_TYPES.CONFIRM, {
                   title: "Delete Event",
+                  message:"do you want to delete this event?",
                   onConfirm: async () => {
                     await eventService.deleteEvent(event.id, event.image_url);
                     onEventUpdated?.();
