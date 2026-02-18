@@ -100,13 +100,12 @@ export default function Feed({ mode = "public" }) {
 
     return () => { isMounted = false; };
   }, [
-    user?.id, 
     refreshKey, 
     buildingFilter, 
     dateFilter, 
     searchQuery, 
     currentPage, 
-    isMyEventsMode
+    isMyEventsMode ? user?.id : null
   ]); // Single effect tracks all triggers
 
   /* ======================================================
