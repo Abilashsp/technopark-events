@@ -6,14 +6,15 @@ export async function fetchEventsPublic({
   search = "",
   page = 1,
   pageSize = 12,
+  date="all"
 }) {
   const params = new URLSearchParams({
     filter: building,
     search,
     page,
     pageSize,
+    date
   });
-
   const res = await fetch(`/api/events?${params.toString()}`);
 
   if (!res.ok) {

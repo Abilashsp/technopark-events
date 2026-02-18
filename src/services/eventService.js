@@ -36,34 +36,34 @@ export const eventService = {
   },
 
   /* ================= FETCHING ================= */
-  fetchEvents: async (filter = "All", dateRange = "all", searchQuery = "", page = 1, pageSize = 12) => {
-    const offset = (page - 1) * pageSize;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  // fetchEvents: async (filter = "All", dateRange = "all", searchQuery = "", page = 1, pageSize = 12) => {
+  //   const offset = (page - 1) * pageSize;
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0);
 
-    let query = supabase
-      .from("events")
-      .select("*", { count: "exact" })
-      .in("status", ["active", "under_review"])
-      .gte("event_date", today.toISOString())
-      .order("event_date", { ascending: true })
-      .range(offset, offset + pageSize - 1);
+  //   let query = supabase
+  //     .from("events")
+  //     .select("*", { count: "exact" })
+  //     .in("status", ["active", "under_review"])
+  //     .gte("event_date", today.toISOString())
+  //     .order("event_date", { ascending: true })
+  //     .range(offset, offset + pageSize - 1);
 
-    if (filter !== "All") query = query.eq("building", filter);
+  //   if (filter !== "All") query = query.eq("building", filter);
 
-    const dateBounds = eventService.getDateRange(dateRange);
-    if (dateBounds) {
-      query = query.gte("event_date", dateBounds.from.toISOString()).lte("event_date", dateBounds.to.toISOString());
-    }
+  //   const dateBounds = eventService.getDateRange(dateRange);
+  //   if (dateBounds) {
+  //     query = query.gte("event_date", dateBounds.from.toISOString()).lte("event_date", dateBounds.to.toISOString());
+  //   }
 
-    if (searchQuery.trim()) {
-      query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
-    }
+  //   if (searchQuery.trim()) {
+  //     query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+  //   }
 
-    const { data, count, error } = await query;
-    if (error) throw error;
-    return { events: data || [], total: count || 0, totalPages: Math.ceil((count || 0) / pageSize) };
-  },
+  //   const { data, count, error } = await query;
+  //   if (error) throw error;
+  //   return { events: data || [], total: count || 0, totalPages: Math.ceil((count || 0) / pageSize) };
+  // },
 
   fetchMyEvents: async (page = 1, pageSize = 12, searchQuery = "") => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -104,7 +104,7 @@ export const eventService = {
       .eq("user_id", userId);
 
     if (error) {
-      console.error("Error fetching report batch:", error);
+      // console.error("Error fetching report batch:", error);
       return new Set();
     }
     

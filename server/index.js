@@ -16,7 +16,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error("❌ Missing Supabase environment variables");
 }
 
-console.log("✅ Supabase URL loaded:", supabaseUrl);
+
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -27,12 +27,13 @@ app.get("/api/events", async (req, res) => {
       search = "",
       page = 1,
       pageSize = 12,
+      date
     } = req.query;
 
     const offset = (page - 1) * pageSize;
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // today.setHours(0, 0, 0, 0);
 
     let query = supabase
       .from("events")
@@ -41,6 +42,61 @@ app.get("/api/events", async (req, res) => {
       .gte("event_date", today.toISOString())
       .order("event_date", { ascending: true })
       .range(offset, offset + pageSize - 1);
+
+  // DATE FILTERING
+const now = new Date();
+
+if (!date || date === "all") {
+  // Upcoming events
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  query = query.gte("event_date", start.toISOString());
+}
+
+else if (date === "today") {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
+  query = query
+    .gte("event_date", start.toISOString())
+    .lte("event_date", end.toISOString());
+}
+
+else if (date === "this_week") {
+  const start = new Date();
+  const day = start.getDay(); // 0 (Sun) - 6 (Sat)
+
+  // Set to Monday (adjust if you prefer Sunday start)
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  start.setDate(start.getDate() + diffToMonday);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  query = query
+    .gte("event_date", start.toISOString())
+    .lte("event_date", end.toISOString());
+}
+
+else if (date === "this_month") {
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  end.setHours(23, 59, 59, 999);
+
+  query = query
+    .gte("event_date", start.toISOString())
+    .lte("event_date", end.toISOString());
+}
+
+
 
     if (filter !== "All") query = query.eq("building", filter);
 
@@ -59,12 +115,12 @@ app.get("/api/events", async (req, res) => {
       totalPages: Math.ceil(count / pageSize),
     });
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () =>
-  console.log(`✅ Local API running on http://localhost:${PORT}`)
+  // console.log(`✅ Local API running on http://localhost:${PORT}`)
 );

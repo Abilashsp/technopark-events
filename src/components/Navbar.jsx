@@ -91,7 +91,6 @@ export default function Navbar() {
 
   const handleEventSuccess = () => {
     triggerRefresh(); // Trigger global refresh
-    console.log("Event created - Refresh Triggered");
   };
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);

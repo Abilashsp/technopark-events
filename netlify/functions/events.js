@@ -17,6 +17,7 @@ export async function handler(event) {
       search = "",
       page = 1,
       pageSize = 12,
+      date="all"
     } = params;
 
     const offset = (page - 1) * pageSize;
@@ -31,6 +32,58 @@ export async function handler(event) {
       .gte("event_date", today.toISOString())
       .order("event_date", { ascending: true })
       .range(offset, offset + pageSize - 1);
+
+      const now = new Date();
+
+      if (!date || date === "all") {
+  // Upcoming events
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  query = query.gte("event_date", start.toISOString());
+}
+
+else if (date === "today") {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
+  query = query
+    .gte("event_date", start.toISOString())
+    .lte("event_date", end.toISOString());
+}
+
+else if (date === "this_week") {
+  const start = new Date();
+  const day = start.getDay(); // 0 (Sun) - 6 (Sat)
+
+  // Set to Monday (adjust if you prefer Sunday start)
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  start.setDate(start.getDate() + diffToMonday);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  query = query
+    .gte("event_date", start.toISOString())
+    .lte("event_date", end.toISOString());
+}
+
+else if (date === "this_month") {
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  end.setHours(23, 59, 59, 999);
+
+  query = query
+    .gte("event_date", start.toISOString())
+    .lte("event_date", end.toISOString());
+}
 
     if (filter !== "All") query = query.eq("building", filter);
 

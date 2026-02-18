@@ -76,6 +76,7 @@ export default function Feed({ mode = "public" }) {
           });
         }
 
+
         // 2. Fetch Report Statuses (Batch)
         let idSet = new Set();
         if (user?.id) {
@@ -89,7 +90,7 @@ export default function Feed({ mode = "public" }) {
           setReportedEventIds(idSet);
         }
       } catch (err) {
-        console.error("Fetch failed:", err);
+        // console.error("Fetch failed:", err);
       } finally {
         if (isMounted) setLoading(false);
       }

@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
                 const { data: { session } } = await supabase.auth.getSession();
 
                 if (session?.user) {
+                   
                     if (mounted) setUser(session.user);
 
                     await authService.ensureProfileExists(session.user);
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }) => {
                     }
                 }
             } catch (error) {
-                console.error('Auth load error:', error);
+                // console.error('Auth load error:', error);
             } finally {
                 if (mounted) setLoading(false);
             }

@@ -15,7 +15,7 @@ export const authService = {
       if (error) throw error;
       return user;
     } catch (error) {
-      console.error('Error getting current user:', error);
+      // console.error('Error getting current user:', error);
       return null;
     }
   },
@@ -26,7 +26,7 @@ export const authService = {
       if (error) throw error;
       return session;
     } catch (error) {
-      console.error('Error getting session:', error);
+      // console.error('Error getting session:', error);
       return null;
     }
   },
@@ -37,7 +37,7 @@ export const authService = {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error signing out:', error);
+      // console.error('Error signing out:', error);
       return false;
     }
   },
@@ -57,7 +57,7 @@ export const authService = {
     );
 
     if (error) {
-      console.error('Ensure profile error:', error);
+      // console.error('Ensure profile error:', error);
     }
   },
 
@@ -73,13 +73,13 @@ export const authService = {
         .single();
 
       if (error) {
-        console.error('Get profile error:', error);
+        // console.error('Get profile error:', error);
         return null;
       }
 
       return data;
     } catch (err) {
-      console.error('getMyProfile failed:', err);
+      // console.error('getMyProfile failed:', err);
       return null;
     }
   },
