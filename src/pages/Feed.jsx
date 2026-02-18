@@ -46,11 +46,11 @@ export default function Feed({ mode = "public" }) {
   const [localDate, setLocalDate] = useState(dateFilter);
 
   // Sync local filters with URL
-  useEffect(() => {
-    setLocalSearch(searchQuery);
-    setLocalBuilding(buildingFilter);
-    setLocalDate(dateFilter);
-  }, [searchQuery, buildingFilter, dateFilter]);
+  // useEffect(() => {
+  //   setLocalSearch(searchQuery);
+  //   setLocalBuilding(buildingFilter);
+  //   setLocalDate(dateFilter);
+  // }, [searchQuery, buildingFilter, dateFilter]);
 
   /* ======================================================
       CONSOLIDATED DATA FETCHING (Fixes 6x Fetch Spam)
