@@ -1,9 +1,14 @@
-import React from 'react';
+import React from "react";
 import { Box, Typography, Button, CardMedia, Chip, Stack } from "@mui/material";
 import { CloudUpload, DeleteForever, AutoAwesome } from "@mui/icons-material";
 
 // 1. Image Upload Banner
-export const ImageUploadBanner = ({ imagePreview, error, onImageChange, onRemove }) => {
+export const ImageUploadBanner = ({
+  imagePreview,
+  error,
+  onImageChange,
+  onRemove,
+}) => {
   return (
     <Box
       sx={{
@@ -23,15 +28,29 @@ export const ImageUploadBanner = ({ imagePreview, error, onImageChange, onRemove
     >
       {imagePreview ? (
         <>
-          <CardMedia component="img" image={imagePreview} alt="Event Cover" sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <CardMedia
+            component="img"
+            image={imagePreview}
+            alt="Event Cover"
+            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
 
-          <Stack direction="row" spacing={1} sx={{ position: "absolute", bottom: 10, right: 10 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ position: "absolute", bottom: 10, right: 10 }}
+          >
             <Button
               variant="contained"
               component="label"
               size="small"
               startIcon={<CloudUpload />}
-              sx={{ bgcolor: "white", color: "primary.main", "&:hover": { bgcolor: "#f5f5f5" }, opacity: 0.9 }}
+              sx={{
+                bgcolor: "white",
+                color: "primary.main",
+                "&:hover": { bgcolor: "#f5f5f5" },
+                opacity: 0.9,
+              }}
             >
               Replace
               <input
@@ -63,7 +82,12 @@ export const ImageUploadBanner = ({ imagePreview, error, onImageChange, onRemove
           <input
             type="file"
             accept="image/*"
-            style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer" }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              opacity: 0,
+              cursor: "pointer",
+            }}
             onChange={onImageChange}
           />
         </>
@@ -73,7 +97,11 @@ export const ImageUploadBanner = ({ imagePreview, error, onImageChange, onRemove
 };
 
 // 2. Template Selector
-export const TemplateSelector = ({ templates, currentDescription, onSelect }) => {
+export const TemplateSelector = ({
+  templates,
+  currentDescription,
+  onSelect,
+}) => {
   return (
     <Box sx={{ mb: 2 }}>
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
@@ -92,8 +120,10 @@ export const TemplateSelector = ({ templates, currentDescription, onSelect }) =>
             size="small"
             variant="outlined"
             sx={{
-              borderColor: currentDescription === template ? "primary.main" : undefined,
-              bgcolor: currentDescription === template ? "primary.lighter" : undefined,
+              borderColor:
+                currentDescription === template ? "primary.main" : undefined,
+              bgcolor:
+                currentDescription === template ? "primary.lighter" : undefined,
             }}
           />
         ))}

@@ -60,6 +60,7 @@ export const useDialog = () => useContext(DialogContext);
    This renders the correct content based on the 'type' passed to it.
    ======================================================================== */
 const GlobalDialog = ({ open, type, onClose, onConfirm, title, message, ...other }) => {
+
   // State specifically for Report Dialog
   const [reportData, setReportData] = useState({ reason: "", message: "" });
   const [loading, setLoading] = useState(false);
@@ -156,3 +157,6 @@ const GlobalDialog = ({ open, type, onClose, onConfirm, title, message, ...other
     </Dialog>
   );
 };
+
+
+

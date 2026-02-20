@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import { EventBusy } from "@mui/icons-material";
 import { useSearchParams } from "react-router-dom";
+import { ToggleButtonGroup, ToggleButton } from "@mui/material";
+import { ViewModule, ViewList } from "@mui/icons-material";
 
 import EventCard from "../components/EventCard";
 import HeroSection from "../components/HeroSection";
@@ -35,6 +37,7 @@ export default function Feed({ mode = "public" }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
+  const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
 
   const buildingFilter = searchParams.get("building") || "All";
   const dateFilter = searchParams.get("date") || "all";
@@ -65,7 +68,11 @@ export default function Feed({ mode = "public" }) {
         let result;
         if (isMyEventsMode) {
           if (!user?.id) return;
-          result = await eventService.fetchMyEvents(currentPage, PAGE_SIZE, searchQuery);
+          result = await eventService.fetchMyEvents(
+            currentPage,
+            PAGE_SIZE,
+            searchQuery
+          );
         } else {
           result = await fetchEventsPublic({
             building: buildingFilter,
@@ -75,7 +82,6 @@ export default function Feed({ mode = "public" }) {
             pageSize: PAGE_SIZE,
           });
         }
-
 
         // 2. Fetch Report Statuses (Batch)
         let idSet = new Set();
@@ -98,14 +104,16 @@ export default function Feed({ mode = "public" }) {
 
     loadAllData();
 
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [
-    refreshKey, 
-    buildingFilter, 
-    dateFilter, 
-    searchQuery, 
-    currentPage, 
-    isMyEventsMode ? user?.id : null
+    refreshKey,
+    buildingFilter,
+    dateFilter,
+    searchQuery,
+    currentPage,
+    isMyEventsMode ? user?.id : null,
   ]); // Single effect tracks all triggers
 
   /* ======================================================
@@ -117,7 +125,9 @@ export default function Feed({ mode = "public" }) {
     if (refreshLock.current) return;
     refreshLock.current = true;
     triggerRefresh();
-    setTimeout(() => { refreshLock.current = false; }, 500);
+    setTimeout(() => {
+      refreshLock.current = false;
+    }, 500);
   }, [triggerRefresh]);
 
   /* ======================================================
@@ -156,7 +166,9 @@ export default function Feed({ mode = "public" }) {
         </HeroSection>
       ) : (
         <Box sx={{ pt: 10, pb: 6, textAlign: "center", bgcolor: "white" }}>
-          <Typography variant="h4" fontWeight={900}>My Events</Typography>
+          <Typography variant="h4" fontWeight={900}>
+            My Events
+          </Typography>
         </Box>
       )}
 
@@ -169,14 +181,39 @@ export default function Feed({ mode = "public" }) {
           <Fade in>
             <Box>
               <Box
+                display="flex"
+                justifyContent="flex-end"
+                alignItems="center"
+                mb={3}
+              >
+                <ToggleButtonGroup
+                  value={viewMode}
+                  exclusive
+                  onChange={(e, val) => val && setViewMode(val)}
+                  size="small"
+                >
+                  <ToggleButton value="grid">
+                    <ViewModule fontSize="small" />
+                  </ToggleButton>
+                  <ToggleButton value="list">
+                    <ViewList fontSize="small" />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+
+              <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: {
-                    xs: "1fr",
-                    sm: "repeat(2,1fr)",
-                    md: "repeat(3,1fr)",
-                    lg: "repeat(4,1fr)",
-                  },
+                  gridTemplateColumns:
+                    viewMode === "list"
+                      ? "1fr"
+                      : {
+                          xs: "1fr",
+                          sm: "repeat(2,1fr)",
+                          md: "repeat(3,1fr)",
+                          lg: "repeat(4,1fr)",
+                        },
+
                   gap: 3,
                 }}
               >
@@ -190,6 +227,7 @@ export default function Feed({ mode = "public" }) {
                     <EventCard
                       key={event.id}
                       event={event}
+                      isListView={viewMode === "list"}
                       onEventUpdated={handleRefreshEvents}
                       initialReported={reportedEventIds.has(event.id)}
                     />

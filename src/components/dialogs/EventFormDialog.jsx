@@ -69,9 +69,7 @@ export default function EventFormDialog({ open, onClose, onSuccess, eventToEdit 
         <Typography variant="h6" fontWeight="700" color="text.primary">
           {isEditMode ? "Edit Event" : "Create New Event"}
         </Typography>
-        <IconButton onClick={handleRequestClose} disabled={loading} size="small">
-          <Close />
-        </IconButton>
+ 
       </DialogTitle>
 
       {/* CONTENT */}
